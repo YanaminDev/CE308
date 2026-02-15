@@ -8,7 +8,7 @@ module.exports = {
       borderRadius:{
         'xl': '1rem'
       },
-      forntSize:{
+      fontSize:{
         '10xl' : "136px"
       },
       colors:{
