@@ -9,9 +9,14 @@ import {
   Alert,
   TouchableWithoutFeedback,
   Keyboard,
+  TextInput,
 } from "react-native";
 import CustomInput from "@/component/CustomInput";
 import CustomButton from "@/component/CustomButton";
+import Checkbox from "@/component/Checkbox";
+import RadioButton from "@/component/Radiobutton";
+import DatePickerInput from "@/component/DatePickerInput"
+
 
 interface FormData {
   fullName: string;
@@ -19,6 +24,10 @@ interface FormData {
   phone: string;
   password: string;
   confirmPassword: string;
+  address : string;
+  checked : boolean;
+  gender: string;
+  birthDate: Date | null;
 }
 
 interface FormErrors {
@@ -27,7 +36,13 @@ interface FormErrors {
   phone?: string;
   password?: string;
   confirmPassword?: string;
+  address? : string
+  checked?:string
+  gender?:string
+  birthDate?: string
 }
+
+
 
 export default function Index() {
   const [formData, setFormData] = useState<FormData>({
@@ -36,58 +51,109 @@ export default function Index() {
     phone: "",
     password: "",
     confirmPassword: "",
+    address : "",
+    checked : false,
+    gender: "",
+    birthDate: null
   });
 
   const [errors, setErrors] = useState<FormErrors>({});
   const [touched, setTouched] = useState<{ [key: string]: boolean }>({});
   const [isLoading, setIsLoading] = useState(false);
 
-  const validateField = (name: string, value: string): string | undefined => {
+  const validateField = (name: string, value: string | boolean | Date| null ): string | undefined => {
     switch (name) {
-      case "fullName": {
-        if (!value.trim()) {
+      case "fullName" :
+        if ((typeof value === 'string' && !value.trim())) {
           return "กรุณากรอกชื่อ-นามสกุล";
         }
-        if (value.trim().length < 3) {
+        if (typeof value === 'string' && value.trim().length < 3) {
           return "ชื่อ-นามสกุล ต้องมีอย่างน้อย 3 ตัว";
         }
         return undefined;
-      }
+      
       case "email":
-        if (!value.trim()) {
+        if (typeof value === 'string' && !value.trim()) {
           return "กรุณากรอกอีเมล";
         }
+
+        if (typeof value === 'string') {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(value)) {
-          return "รูปเเบบอีเมลไม่ถูกต้อง";
+          return "รูปแบบอีเมลไม่ถูกต้อง";
         }
+      }
         return undefined;
 
       case "phone":
-        if (!value.trim()) {
+        if (typeof value === 'string' && !value.trim()) {
           return "กรุณากรอกเบอร์โทรศัพท์";
         }
-        const phoneRegex = /^[0-9]{10}$/;
-        if (!phoneRegex.test(value)) {
-          return "เบอร์โทรศัพท์ต้องป็นตัวเลข 10 หลัก";
-        }
+        if (typeof value === 'string') {
+          const phoneRegex = /^[0-9]{10}$/;
+          if (!phoneRegex.test(value)) {
+            return "เบอร์โทรศัพท์ต้องเป็นตัวเลข 10 หลัก";
+          }}
         return undefined;
       case "password":
-        if (!value) {
+        if (typeof value === 'string' && !value) {
           return "กรุณากรอกรหัสผ่าน";
         }
-        if (value.length < 6) {
+        if (typeof value === 'string' && value.length < 6) {
           return "รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร";
         }
         return undefined;
       case "confirmPassword":
-        if (!value) {
+        if (typeof value === 'string' && !value) {
           return "กรุณากรอกยืนยันรหัสผ่าน";
         }
-        if (value !== formData.password) {
+        if (typeof value === 'string' && value !== formData.password) {
           return "รหัสผ่านไม่ตรงกัน";
         }
         return undefined;
+      case "address":
+        if (typeof value === 'string' && !value) {
+          return "กรุณากรอกที่อยู่";
+        }
+        if (typeof value === 'string' && value.length < 10) {
+          return "กรุณากรอกข้อมูลที่อยู่เพิ่มเติม";
+        }
+        return undefined;
+      case "checked":
+        if (typeof value === 'boolean' && !value){
+          return "กรุณากดยินยอมข้อตกลง"
+        }
+        return undefined
+
+        case "birthDate":
+          if (!value) {
+            return "กรุณาเลือกวันเกิด";
+          }
+          if (value instanceof Date) {
+            const today = new Date();
+            const age = today.getFullYear() - value.getFullYear();
+            const monthDiff = today.getMonth() - value.getMonth();
+            const dayDiff = today.getDate() - value.getDate();
+            
+            const actualAge = monthDiff < 0 || (monthDiff === 0 && dayDiff < 0) 
+              ? age - 1 
+              : age;
+            
+            if (actualAge < 13) {
+              return "อายุต้องมากกว่า 13 ปี";
+            }
+          }
+          return undefined;
+    
+        case "gender":
+          if (!value) {
+            return "กรุณาเลือกเพศ";
+          }
+          return undefined;
+        
+
+    
+
       default:
         return undefined;
     }
@@ -118,26 +184,31 @@ export default function Index() {
     }));
   };
 
+  
+
+
   const validationForm = () => {
-    const newErrors: FormErrors = {};
-    let isValid = true;
+  const newErrors: Partial<Record<keyof FormData, string>> = {};
+  let isValid = true;
 
-    (Object.keys(formData) as Array<keyof FormData>).forEach((key) => {
-      const error = validateField(key, formData[key]);
-      if (error) {
-        newErrors[key] = error;
-        isValid = false;
-      }
-    });
-    setErrors(newErrors);
+  (Object.keys(formData) as Array<keyof FormData>).forEach((key) => {
+    const error = validateField(key, formData[key]);
+    if (error) {
+      newErrors[key] = error;
+      isValid = false;
+    }
+  });
+  
+  setErrors(newErrors);
 
-    const allTouched: { [key: string]: boolean } = {};
-    Object.keys(formData).forEach((key) => {
-      allTouched[key] = true;
-    });
-    setTouched(allTouched);
-    return isValid;
-  };
+  const allTouched: Partial<Record<keyof FormData, boolean>> = {};
+  Object.keys(formData).forEach((key) => {
+    allTouched[key as keyof FormData] = true;
+  });
+  setTouched(allTouched);
+  
+  return isValid;
+};
 
   const handleSubmit = async () => {
     Keyboard.dismiss();
@@ -175,6 +246,11 @@ export default function Index() {
       phone: "",
       password: "",
       confirmPassword: "",
+      address: "",
+      checked : false,
+      gender: "",
+      birthDate : null
+
     });
     setErrors({});
     setTouched({});
@@ -255,14 +331,68 @@ export default function Index() {
               secureTextEntry
               autoCapitalize="none"
             ></CustomInput>
+            <CustomInput
+            label="ที่อยู่"
+            placeholder="กรุณากรอกที่อยู่"
+            value={formData.address}
+            onChangeText={(value) => handleChange("address", value)}
+            onBlur={() => handleBlur("address")}
+            error={errors.address}
+            touched={touched.address}
+            secureTextEntry
+            multiline
+            autoCapitalize="none"
+            count={formData.address.length}
+            
+            >
+            </CustomInput>
+
+            <DatePickerInput
+              label="วันเกิด"
+              value={formData.birthDate}
+              onChange={(date) => {
+                setFormData({ ...formData, birthDate: date });
+                const error = validateField("birthDate", date);
+                setErrors({ ...errors, birthDate: error });
+              }}
+              error={errors.birthDate}
+              touched={touched.birthDate}
+              placeholder="เลือกวันเกิด"
+            />
+
+            <RadioButton
+            label="เพศ"
+            options={[
+              { label: "ชาย", value: "male" },
+              { label: "หญิง", value: "female" },
+              { label: "ไม่ระบุ", value: "other" }
+            ]}
+            selectedValue={formData.gender}
+            onSelect={(value) => handleChange("gender", value)}
+            error={errors.gender}
+            touched={touched.gender}
+/>
+
+            <Checkbox 
+            label="ฉันยอมรับข้อกำหนดและเงื่อนไข" 
+            checked={formData.checked} 
+            error={errors.checked}
+            touched={touched.checked}
+            onPress={() => {
+              const newValue = !formData.checked;
+              setFormData({ ...formData, checked: newValue });
+              const error = validateField("checked", newValue);
+              setErrors({ ...errors, checked: error });}}/>
+
           </View>
-          <View className="mt-4 space-y-3">
+          <View className="mt-4 flex-col  space-y-3 px-6">
             <CustomButton
               title="ลงทะเบียน"
               onPress={handleSubmit}
               variant="primary"
               loading={isLoading}
             ></CustomButton>
+            
             <CustomButton
               title="รีเซ็ตฟอร์ม"
               onPress={handleReset}
@@ -270,6 +400,7 @@ export default function Index() {
               loading={isLoading}
             ></CustomButton>
           </View>
+          
           <View className="mt-6 bg-blue-50 border-2 border-blue-200 rounded-lg p-4">
             <Text className="text-blue-800 font-semibold text-base mb-2">
               {" "}

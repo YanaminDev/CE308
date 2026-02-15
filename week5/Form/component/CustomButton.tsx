@@ -33,10 +33,11 @@ export default function CustomButton({
   };
   return (
     <TouchableOpacity
-      className={`w-full px-6 py-4 rounded-lg ${getVariantStyle()} flex-row justify-center items-center`}
+      className={`w-[30px] px-6 py-4 rounded-lg  ${getVariantStyle()} flex-row justify-center items-center`}
       onPress={onPress}
       disabled={disabled || loading}
       activeOpacity={0.8}
+
     >
       {loading ? (
         <ActivityIndicator color="white" />

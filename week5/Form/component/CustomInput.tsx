@@ -5,17 +5,19 @@ interface CustomInputProps extends TextInputProps {
   label: string;
   error?: string;
   touched?: boolean;
+  count? : number;
 }
 
 export default function CustomInput({
   label,
+  count,
   error,
   touched,
   ...props
 }: CustomInputProps) {
   const hasError = touched && error;
   return (
-    <View className="w-full mb-4">
+    <View className="w-full mb-4 flex flex-col">
       <Text className="text-gray-700 font-semibold mb-2 text-base">
         {label}
       </Text>
@@ -25,6 +27,7 @@ export default function CustomInput({
         {...props}
       />
       {hasError && <Text className="text-red-500 text-sm mt-1">{error}</Text>}
+      {count && <Text className="text-red-500 text-sm mt-1 mt-[20px]">{count} / 200</Text>}
     </View>
   );
 }
