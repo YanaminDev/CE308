@@ -18,3 +18,5 @@
 # ไฟล์  product/[id].tsx
 ทำการเก็บค่าที่ส่งมาลงตัวเเปร id, name, price , description ด้วยคำสั่ง useLocalSearchParams(); เเละทำการเพิ่ม block view เพื่อจะกำหนดว่าตรงนี้คือส่วนการใส่รูปภาพ เเต่เราจะใส่ข้อความไปก่อน เเละกำหนด style ให้ใช้ imagecontainer สำหรับ block card โดยตกเเต่งให้เป็นสีเทา เเละจัดข้อความใน view ให้อยู่ตรงกลาง โดยใช้ flex เเละใช้justifyContent,alignItems ในการจัด
 เราจะเพิ่มให้มีการเเสดงผล ของ description โดยกำหนดให้ใช้ style ของ labelsmall ซึ่งจะมีการเเต่งให้ฟอนด์มีขนาดเล็กเเละใช้สีเทาอ่อน
+
+สวัสดี
